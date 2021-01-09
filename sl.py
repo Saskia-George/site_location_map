@@ -27,14 +27,13 @@ class AdaptedAllocSamplePlayer(SiteLocationPlayer):
         sample_pos = []
 
         #count number of stores to track round and increase min_dist
-        num_stores = store_locations[self.player_id].size
+        num_stores = len(store_locations[self.player_id])
         min_dist = 50 + num_stores*30
-
-        print(min_dist)
+        #print(min_dist)
         #sorted population density from highest to lowest
         sorted_indices = tuple(map(tuple, np.dstack(np.unravel_index(np.argsort(slmap.population_distribution.ravel()), slmap.size))[0][::-1]))
 
-        print(sorted_indices)
+       # print(sorted_indices)
         counter = 0
         for max_pos in sorted_indices:
             too_close = False
