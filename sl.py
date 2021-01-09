@@ -9,13 +9,13 @@ class AdaptedAllocSamplePlayer(SiteLocationPlayer):
     """
     Agent samples locations and selects the highest allocating one using
     the allocation function but:
-
+    - uses highest population squares first
     """
     def place_stores(self, slmap: SiteLocationMap,
                      store_locations: Dict[int, List[Store]],
                      current_funds: float):
         store_conf = self.config['store_config']
-        num_rand = 100
+        num_rand = 500
 
         #Array of all stores
         all_stores_pos = []
@@ -23,30 +23,31 @@ class AdaptedAllocSamplePlayer(SiteLocationPlayer):
             for player_store in player_stores:
                 all_stores_pos.append(player_store.pos)
 
-        #instead of randomly choosing, choose locations with largest population
-
+#instead of randomly choosing, choose locations with largest population
         sample_pos = []
 
-        min_dist = 50
+        #count number of stores to track round and increase min_dist
+        num_stores = store_locations[self.player_id].size
+        min_dist = 50 + num_stores*30
+
+        print(min_dist)
         #sorted population density from highest to lowest
         sorted_indices = tuple(map(tuple, np.dstack(np.unravel_index(np.argsort(slmap.population_distribution.ravel()), slmap.size))[0][::-1]))
+
+        print(sorted_indices)
+        counter = 0
         for max_pos in sorted_indices:
             too_close = False
             for pos in all_stores_pos:
                 dist = np.sqrt(np.square(max_pos[0]-pos[0]) + np.square(max_pos[1]-pos[1]))
                 if dist < min_dist:
                     too_close = True
+            if counter > 100:
+                break
             if not too_close:
-                sample_pos.append(max_pos[0],max_pos[1])
+                counter = counter + 1
+                sample_pos.append((max_pos[0],max_pos[1]))
 
-        print("testing")
-        print(sample_pos)
-
-
-        #for i in range(num_rand):
-        #    x = random.randint(0, slmap.size[0])
-        #    y = random.randint(0, slmap.size[1])
-        #   sample_pos.append((x,y))
 
         # Choose largest store type possible:
         if current_funds >= store_conf['large']['capital_cost']:
