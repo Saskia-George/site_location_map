@@ -48,7 +48,7 @@ class AllocSamplePlayer(SiteLocationPlayer):
         self.stores_to_place = [Store(random.choice(best_pos), store_type)]
         return
 
-class AdaptedAllocSamplePlayer(SiteLocationPlayer):
+class AdaptedAllocSamplePlayer2(SiteLocationPlayer):
     """
     Agent samples locations and selects the highest allocating one using
     the allocation function but:
@@ -71,27 +71,41 @@ class AdaptedAllocSamplePlayer(SiteLocationPlayer):
 
         #count number of stores to track round and increase min_dist
         num_stores = len(store_locations[self.player_id])
-        min_dist = 50 + num_stores*30
+        min_dist = 50 
 
        
         #sorted population density from highest to lowest
         sorted_indices = tuple(map(tuple, np.dstack(np.unravel_index(np.argsort(slmap.population_distribution.ravel()), slmap.size))[0][::-1]))
 
         counter = 0
-        for max_pos in sorted_indices:
-            too_close = False
-            for pos in all_stores_pos:
-                dist = np.sqrt(np.square(max_pos[0]-pos[0]) + np.square(max_pos[1]-pos[1]))
-                if dist < min_dist:
-                    too_close = True
-            if counter > 100:
-                break
-            if not too_close:
-                counter = counter + 1
-                sample_pos.append((max_pos[0],max_pos[1]))
+        if(num_stores<5):
+            for max_pos in sorted_indices:
+                too_close = False
+                for pos in all_stores_pos:
+                    dist = np.sqrt(np.square(max_pos[0]-pos[0]) + np.square(max_pos[1]-pos[1]))
+                    if dist < min_dist:
+                        too_close = True
+                if counter > 100:
+                    break
+                if not too_close:
+                    counter = counter + 1
+                    sample_pos.append((max_pos[0],max_pos[1]))
+        else:
+             for max_pos in sorted_indices[50:]:
+                too_close = False
+                for pos in all_stores_pos:
+                    dist = np.sqrt(np.square(max_pos[0]-pos[0]) + np.square(max_pos[1]-pos[1]))
+                    if dist < min_dist:
+                        too_close = True
+                if counter > 100:
+                    break
+                if not too_close:
+                    counter = counter + 1
+                    sample_pos.append((max_pos[0],max_pos[1]))
 
 
         # Choose largest store type possible:
+        
         if current_funds >= store_conf['large']['capital_cost']:
             store_type = 'large'
         elif current_funds >= store_conf['medium']['capital_cost']:
@@ -117,3 +131,6 @@ class AdaptedAllocSamplePlayer(SiteLocationPlayer):
         # pos = random.choice(max_alloc_positons)
         self.stores_to_place = [Store(random.choice(best_pos), store_type)]
         return
+
+
+
